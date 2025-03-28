@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traducteur d'Animaux</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+        h1 {
+            color: #a83232;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .container {
+            background-color: #1e1e1e;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #b0b0b0;
+        }
+        select, textarea, button {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 4px;
+            font-size: 16px;
+            background-color: #2d2d2d;
+            color: #e0e0e0;
+        }
+        textarea {
+            height: 120px;
+            resize: vertical;
+        }
+        button {
+            background-color: #a83232;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #7d2424;
+        }
+        .result {
+            min-height: 120px;
+            padding: 15px;
+            background-color: #2d2d2d;
+            border-left: 5px solid #a83232;
+            font-size: 18px;
+        }
+        .icon {
+            font-size: 24px;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        .translation-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .translation-box {
+            flex: 1;
+        }
+        .direction-switch {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+        }
+        .direction-switch button {
+            background-color: #9c4824;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 5px 0;
+        }
+        .error-message {
+            color: #c75050;
+            font-weight: bold;
+            font-style: italic;
+        }
+        .gif-container {
+            margin-top: 30px;
+            text-align: center;
+        }
+        .gif-container img {
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🐾 Traducteur d'Animaux 🐾</h1>
+        
+        <div class="form-group">
+            <select id="animal" onchange="animalChange()">
+                <option value="poule">Poule 🐔</option>
+                <option value="vache">Vache 🐄</option>
+                <option value="chat">Chat 🐱</option>
+                <option value="pigeon">Pigeon 🐦</option>
+                <option value="chien">Chien 🐶</option>
+            </select>
+        </div>
+        
+        <div class="translation-container">
+            <div class="translation-box">
+                <div class="form-group">
+                    <label id="leftLabel">Français :</label>
+                    <textarea id="texte" placeholder="Tapez votre texte ici..."></textarea>
+                </div>
+            </div>
+            
+            <div class="direction-switch">
+                <button onclick="inverserDirection()" title="Inverser la direction de traduction">
+                    ⇆
+                </button>
+            </div>
+            
+            <div class="translation-box">
+                <div class="form-group">
+                    <label id="rightLabel">Animal :</label>
+                    <div id="resultat" class="result"></div>
+                </div>
+            </div>
+        </div>
+        
+        <button onclick="traduire()">Traduire</button>
+    </div>
+
+    <script>
+        // Messages prédéfinis pour chaque animal
+        const messages = {
+            poule: [
+                "Mmmmh... une pelure de carotte. Miam",
+                "Si je cours en cercle assez vite, est-ce que je peux créer une tornade ?",
+                "Dire qu'à la base j'étais un T-Rex... Tout ce qu'il me reste, c'est mes petites pattes.",
+                "Faut que je gratte... gratte gratte gratte. Y'a sûrement de quoi béqueter là-dessous.",
+                "Oh une miette !",
+                "Du pain du pain du pain !",
+                "Oh non, pas la mère Tweedy ! Gloups",
+                "Qu'il vienne le renard, je l'attends et ça va chier",
+                "Tiens elle est passée où Colette ?",
+                "Il peut pas aller Cocoricoter ailleurs lui ? Il est cinq heures du matin, sérieux..."
+            ],
+            vache: [
+                "Mmmmh... de l'herbe. Miam.",
+                "Elle a l'air plus verte dans le pré d'à côté...",
+                "Namaste.",
+                "Oh, un train.",
+                "Oh, un tracteur.",
+                "Oh, un vélo.",
+                "Saletés de mouches.",
+                "J'irai bien me baigner dans la grosse flaque, là-bas."
+            ],
+            chat: [
+                "Je vais ranger cette table, y'a trop de trucs qui traînent dessus",
+                "Ah tiens, trois heures du matin ? C'est l'heure d'aller réclamer à manger.",
+                "Il fait bien chaud, je vais m'installer ici.",
+                "Ils sont partout ces humains, ils peuvent pas se trouver une maison à eux non ?",
+                "J'ai faim j'ai faim j'ai faim j'ai faim j'ai faim j'ai faim",
+                "Purée j'ai sommeil",
+                "UN POINT ROUGE ! JE VAIS LE CHOPER !",
+                "Je vais me frotter là-dessus, tiens.",
+                "Oh, ça a l'air agréable à gratter ce truc-là.",
+                "Oh un chien ! BARRE TOI ! BARRE TOI ! Sale bête.",
+                "HE HO, MA GAMELLE EST VIDE ! Y'a personne ici ou quoi ?"
+            ],
+            pigeon: [
+                "Redécorons cette voiture.",
+                "Ouh ! Du pain !",
+                "Il a quoi à me courir après lui ?",
+                "Ouh ! Une miette !",
+                "J'adore ce toit.",
+                "Ouh ! Un biscuit !"
+            ],
+            chien: [
+                "La balle la balle la balle la balle !",
+                "Joli bâton joli bâton",
+                "Manger manger manger manger j'ai faim manger manger",
+                "Panier dodo panier coucouche",
+                "Courir ! Boue ! Eau ! Jouer rigolo"
+            ]
+        };
+
+        // Direction de traduction (true = français vers animal, false = animal vers français)
+        let directionFrancaisAnimal = true;
+
+        // Initialiser les labels
+        window.onload = function() {
+            mettreAJourLabels();
+        };
+
+        // Fonction pour inverser la direction de traduction
+        function inverserDirection() {
+            directionFrancaisAnimal = !directionFrancaisAnimal;
+            mettreAJourLabels();
+            
+            // Réinitialiser le résultat
+            document.getElementById("resultat").innerHTML = "";
+        }
+
+        // Mettre à jour les labels selon la direction
+        function mettreAJourLabels() {
+            const animal = document.getElementById("animal").value;
+            let animalLabel = "";
+            
+            if (animal === "poule") animalLabel = "Poule 🐔";
+            else if (animal === "vache") animalLabel = "Vache 🐄";
+            else if (animal === "chat") animalLabel = "Chat 🐱";
+            else if (animal === "pigeon") animalLabel = "Pigeon 🐦";
+            else if (animal === "chien") animalLabel = "Chien 🐶";
+            
+            if (directionFrancaisAnimal) {
+                document.getElementById("leftLabel").textContent = "Français :";
+                document.getElementById("rightLabel").textContent = animalLabel + " :";
+            } else {
+                document.getElementById("leftLabel").textContent = animalLabel + " :";
+                document.getElementById("rightLabel").textContent = "Français :";
+            }
+        }
+        
+        // Mise à jour des labels quand l'animal change
+        function animalChange() {
+            mettreAJourLabels();
+        }
+
+        function traduire() {
+            // Récupère l'animal sélectionné
+            const animal = document.getElementById("animal").value;
+            
+            // Récupère le texte saisi
+            const texte = document.getElementById("texte").value;
+            
+            // Vérifie si un texte a été saisi
+            if (texte.trim() === "") {
+                alert("Veuillez entrer un texte à traduire !");
+                return;
+            }
+            
+            // Détermine l'icône à afficher
+            let icone = "";
+            if (animal === "poule") icone = "🐔";
+            else if (animal === "vache") icone = "🐄";
+            else if (animal === "chat") icone = "🐱";
+            else if (animal === "pigeon") icone = "🐦";
+            else if (animal === "chien") icone = "🐶";
+            
+            // Affiche le résultat
+            const resultat = document.getElementById("resultat");
+            
+            if (!directionFrancaisAnimal) {
+                // Animal vers Français
+                // Message spécial pour le pigeon si le texte est spécifique
+                if (animal === "pigeon" && texte.trim().toLowerCase() === "vrrrou vrou vrou rrou vrou vrou vrou vrrrou") {
+                    resultat.innerHTML = `<span class="icon">${icone}</span> Bonjour Hugo, je suis Vrou. Avant je vivais à Paris mais je n'aimais pas ça, il y avait trop de monde et puis j'avais froid. J'ai appris que tu habitais ici, et je suis venu voir si tu pouvais être mon ami et t'occuper de moi.`;
+                    return;
+                }
+                
+                // Vérifier si le texte contient suffisamment d'onomatopées pour l'animal sélectionné
+                const onomatopees = {
+                    "poule": ["cot", "cocorico"],
+                    "vache": ["meuh", "mmmh", "meu"],
+                    "chat": ["miaou", "miaw", "mia", "rrrr", "shh"],
+                    "pigeon": ["vrou", "rrou", "rou", "vrouh"],
+                    "chien": ["ouaf", "wouf", "waf", "auf", "hhh"]
+                };
+                
+                // Convertir le texte en minuscules pour la comparaison
+                const texteLower = texte.toLowerCase();
+                
+                // Compter les mots totaux (approximatif)
+                const totalMots = texteLower.split(/\s+/).filter(mot => mot.length > 0).length;
+                
+                // Compter les onomatopées de l'animal sélectionné
+                let onomatopeesCount = 0;
+                onomatopees[animal].forEach(onomatopee => {
+                    const regex = new RegExp("\\b" + onomatopee + "\\w*\\b", "gi");
+                    const matches = texteLower.match(regex);
+                    if (matches) {
+                        onomatopeesCount += matches.length;
+                    }
+                });
+                
+                // Vérifier si moins de 50% du texte contient des onomatopées de l'animal
+                if (totalMots > 0 && onomatopeesCount / totalMots < 0.5) {
+                    // Afficher message d'erreur adapté à l'animal
+                    let exempleOnomatopee = "";
+                    if (animal === "poule") exempleOnomatopee = "Cot cot cot";
+                    else if (animal === "vache") exempleOnomatopee = "Meuh meuh";
+                    else if (animal === "chat") exempleOnomatopee = "Miaou miaou";
+                    else if (animal === "pigeon") exempleOnomatopee = "Vrou vrou vrou";
+                    else if (animal === "chien") exempleOnomatopee = "Ouaf ouaf";
+                    
+                    resultat.innerHTML = `<div class="error-message">Nous n'avons pas compris, voulez-vous dire "${exempleOnomatopee}" ?</div>`;
+                    return;
+                }
+                
+                // Sinon, choisit un message aléatoire dans la liste correspondant à l'animal
+                const messageAleatoire = messages[animal][Math.floor(Math.random() * messages[animal].length)];
+                resultat.innerHTML = `<span class="icon">${icone}</span> ${messageAleatoire}`;
+            } else {
+                // Français vers Animal
+                let traduction = "";
+                
+                if (animal === "poule") {
+                    // Générer des "cot" aléatoires
+                    const nbCot = 3 + Math.floor(Math.random() * 5); // Entre 3 et 7 cot
+                    for (let i = 0; i < nbCot; i++) {
+                        if (Math.random() > 0.7) {
+                            traduction += "Cot cot ";
+                        } else {
+                            traduction += "Cot ";
+                        }
+                    }
+                } else if (animal === "vache") {
+                    // Générer des "meuh" aléatoires
+                    const nbMeuh = 2 + Math.floor(Math.random() * 4); // Entre 2 et 5 meuh
+                    for (let i = 0; i < nbMeuh; i++) {
+                        const type = Math.random();
+                        if (type < 0.3) {
+                            traduction += "Meuh ";
+                        } else if (type < 0.6) {
+                            traduction += "Mmmh ";
+                        } else {
+                            traduction += "Meuuuuh ";
+                        }
+                    }
+                } else if (animal === "chat") {
+                    // Générer des "miaou" aléatoires
+                    const nbMiaou = 2 + Math.floor(Math.random() * 4); // Entre 2 et 5 miaou
+                    for (let i = 0; i < nbMiaou; i++) {
+                        const type = Math.random();
+                        if (type < 0.4) {
+                            traduction += "Miaou ";
+                        } else if (type < 0.6) {
+                            traduction += "Rrrr ";
+                        } else if (type < 0.8) {
+                            traduction += "Miaouu ";
+                        } else {
+                            traduction += "Shhhhh ";
+                        }
+                    }
+                } else if (animal === "pigeon") {
+                    // Générer des "vrou" aléatoires
+                    const nbVrou = 3 + Math.floor(Math.random() * 6); // Entre 3 et 8 vrou
+                    for (let i = 0; i < nbVrou; i++) {
+                        const type = Math.random();
+                        if (type < 0.3) {
+                            traduction += "Vrou ";
+                        } else if (type < 0.6) {
+                            traduction += "Vrrrrou ";
+                        } else if (type < 0.8) {
+                            traduction += "Vrrou ";
+                        } else {
+                            traduction += "Rrou ";
+                        }
+                    }
+                } else if (animal === "chien") {
+                    // Générer des "ouaf" aléatoires
+                    const nbOuaf = 2 + Math.floor(Math.random() * 5); // Entre 2 et 6 ouaf
+                    for (let i = 0; i < nbOuaf; i++) {
+                        const type = Math.random();
+                        if (type < 0.3) {
+                            traduction += "Ouaf ";
+                        } else if (type < 0.6) {
+                            traduction += "Wouf ";
+                        } else if (type < 0.8) {
+                            traduction += "Ouaf ouaf ";
+                        } else {
+                            traduction += "Hhh ";
+                        }
+                    }
+                }
+                
+                resultat.innerHTML = `<span class="icon">${icone}</span> ${traduction.trim()}`;
+            }
+        }
+    </script>
+</body>
+</html>
